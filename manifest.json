@@ -1,0 +1,5 @@
+{
+  "name": "XOS", "short_name": "XOS", "start_url": "/", "display": "standalone",
+  "background_color": "#000100", "theme_color": "#000100",
+  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml"}]
+}

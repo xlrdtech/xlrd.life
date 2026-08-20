@@ -1,0 +1,584 @@
+/* ========================================================
+   bottom dock — three-panel switcher
+   ======================================================== */
+.dock{position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 12px;
+  z-index: 40;
+  height: 38px;
+  border: 0.5px solid var(--border);
+  background: rgba(6, 8, 8, 0.9);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border-radius: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  overflow: hidden;
+  padding: 3px;
+  gap: 2px;}
+.dock-btn{appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  border-radius: 9px;
+  cursor: default;}
+.dock-btn.active{background: rgba(0, 220, 130, 0.08);
+  color: var(--accent);
+  border: 0.5px solid var(--border-bright);}
+.dock-btn .glyph{font-size: 12px;
+  letter-spacing: 0;}
+/* ========================================================
+   App drawer (hidden — swipe-up from above the dock)
+   ======================================================== */
+.app-grabber{position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 58px;  /* just above the dock */
+  z-index: 41;
+  width: 80px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default;}
+/* qi 2026-05-17 8672: "That top banner is too low causing overlaps and a scrolling issue"
+   Fullscreen-mode positioning fix - collapse the 78px iOS-frame top clearance
+   and the 58px bottom dock clearance since neither exists outside the IOSDevice wrapper. */
+.os.os-fullscreen .xen-status{top: 0;
+  height: 26px;
+  padding: 0 14px;
+  font-size: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--border);
+  pointer-events: auto;}
+/* hide any dock/home-indicator artifacts the iOS frame might have rendered */
+.os.os-fullscreen .ios-dock,
+.os.os-fullscreen .home-indicator,
+.os.os-fullscreen .ios-statusbar{display: none !important;}
+.os.os-fullscreen .dock{position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(60px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  gap: 0;
+  background: rgba(8, 12, 10, 0.72);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.04) inset;
+  z-index: 6;}
+.os.os-fullscreen .dock-btn{flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 0 6px;
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  font: 10px/1 var(--f-mono);
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: color 0.12s, transform 0.06s;
+  position: relative;}
+.os.os-fullscreen .dock-btn .glyph{font: 400 24px/1 var(--f-mono);
+  display: block;
+  color: var(--text);
+  text-shadow: 0 0 8px transparent;
+  transition: color 0.18s, text-shadow 0.18s;}
+.os.os-fullscreen .dock-btn:hover .glyph{color: var(--text-bright);}
+.os.os-fullscreen .dock-btn:active{transform: scale(0.94);}
+.os.os-fullscreen .dock-btn.active{color: var(--accent);}
+.os.os-fullscreen .dock-btn.active .glyph{color: var(--accent); text-shadow: 0 0 10px var(--accent-dim);}
+.os.os-fullscreen .dock-btn.active::before{content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 0 0 2px 2px;
+  box-shadow: 0 0 6px var(--accent-dim);}
+/* iOS safe-area painted continuation - the dock background extends below the
+   visible area to cover the home-indicator gesture zone */
+.os.os-fullscreen .dock::after{content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: env(safe-area-inset-bottom, 0px);
+  background: rgba(8, 12, 10, 0.72);
+  pointer-events: none;}
+/* 4. Recalibrate the status strip + panes inset + dock to fluid units. */
+.os.os-fullscreen .xen-status{height: var(--status-h);
+  padding: 0 var(--pad-sm);
+  font-size: var(--fs-tiny);}
+.os.os-fullscreen .dock{height: calc(var(--dock-h) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);}
+.os.os-fullscreen .dock-btn{min-height: 44px;
+  font-size: var(--fs-tiny);
+  padding: var(--pad-xs) 0;}
+.os.os-fullscreen .dock-btn .glyph{font-size: var(--icon-md);}
+/* ⛔ THE CENTRED PHONE COLUMN IS RETIRED. qi 2026-08-13 20:38-20:39, repeatedly:
+   "the interface is supposed to take the shape of the entire browser" · "big black
+   ball on both sides" · "Negative space on both sides instead of taking the full
+   with other entire phone screen".
+   The old comment here said the quiet part out loud — "center the phone-shaped
+   column, side gutters dim". Those dim gutters ARE the black he is describing. A
+   1100px cap on .panes and .dock letterboxes every screen wider than that, and it
+   also fought the swipe glass: the dock could not span the viewport it belongs to.
+   XOS fills its viewport at every width. Portrait and landscape alike. */
+@media (min-width: 1280px){.os.os-fullscreen .panes {
+    max-width: none;
+    margin: 0;
+    left: 0;
+    right: 0;}
+.os.os-fullscreen .dock{max-width: none;
+    margin: 0;}
+/* Landscape phone (height < 500px) - compress vertical, smaller dock */
+@media (orientation: landscape) and (max-height: 500px){.os.os-fullscreen {
+    --dock-h: 48px;
+    --status-h: 22px;}
+.os.os-fullscreen .kicker-bar,
+  .os.os-fullscreen .xen-status,
+  .os.os-fullscreen .dock{border-width: 0.5px;}
+.os.os-fullscreen .dock-btn{transition: none;}
+/* 11. Universal: lock html/body to prevent overscroll bounce eating dock */
+html, body{overscroll-behavior-y: none;}
+/* =========================================================
+   qi 2026-05-17 8672: hyper-realistic glass swipe dock
+   - No icons, no buttons inside. The bar IS navigation.
+   - Tap or swipe-up = open app drawer
+   - Pane switch = horizontal swipe (scroll-snap, already wired)
+   - White handle bar lives near the top of the dock zone (where icons were)
+   ========================================================= */
+
+/* Override the previous dock styling entirely for swipe variant */
+.os.os-fullscreen .dock.dock-swipe{display: block;
+  cursor: pointer;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--dock-h, 60px) + env(safe-area-inset-bottom, 0px));
+  padding: 0;
+  z-index: 6;
+
+  /* Hyper-realistic frosted glass:
+     - Deep multi-layer backdrop blur for depth
+     - Subtle vertical gradient from translucent to slightly tinted
+     - Inner light highlight at top edge (refraction)
+     - Inner shadow at bottom for grounding
+     - Radial sheen highlight off-center for "real glass" feel */
+  /* GLASS MUST REACH THE BOTTOM OF THE TICKER (qi 2026-08-14 01:10):
+     "the background on the ticker is not 100% transparent so its making my
+      canonical swipe glass CSS look cut off instead of making it all the way
+      to the bottom of where the ticker is."
+     MEASURED that night, and the ticker is INNOCENT — .dock-notif-ticker and
+     every other dock child compute background rgba(0,0,0,0) with no fill in
+     any of their rules. The cut-off was THIS ramp: it fell to 78% opaque
+     near-black at 100%, and the ticker sits at ~76% down a 60px bar, over an
+     .os/.stage/body stack that is pure rgb(0,0,0). A 40px backdrop-blur of
+     black IS black, so the bar died into solid black exactly at the ticker.
+     Flattening the ramp keeps the tint, sheen, blur, borders and highlights
+     untouched — only the vertical darkening is removed, so the glass carries
+     evenly to the bottom edge. :active and :hover are DELIBERATE press
+     feedback ("glass densifies under finger") and are left alone.
+     REVERT: restore 0.62 / 0.78 on the two stops below. */
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 60%),
+    linear-gradient(
+      to bottom,
+      rgba(20, 28, 24, 0.42) 0%,
+      rgba(18, 26, 22, 0.44) 50%,
+      rgba(16, 24, 20, 0.46) 100%
+    );
+  backdrop-filter: blur(40px) saturate(220%) brightness(1.05);
+  -webkit-backdrop-filter: blur(40px) saturate(220%) brightness(1.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 -8px 24px rgba(0, 0, 0, 0.45);
+
+  transition: backdrop-filter 0.18s ease, background 0.18s ease;}
+/* Pseudo: drag/press feedback - glass densifies under finger */
+.os.os-fullscreen .dock.dock-swipe:active{background:
+    radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 60%),
+    linear-gradient(
+      to bottom,
+      rgba(20, 28, 24, 0.55) 0%,
+      rgba(10, 14, 12, 0.75) 50%,
+      rgba(6, 10, 8, 0.88) 100%
+    );
+  backdrop-filter: blur(48px) saturate(240%) brightness(1.1);
+  -webkit-backdrop-filter: blur(48px) saturate(240%) brightness(1.1);}
+.os.os-fullscreen .dock.dock-swipe:hover{background:
+    radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 60%),
+    linear-gradient(
+      to bottom,
+      rgba(22, 30, 26, 0.48) 0%,
+      rgba(12, 16, 14, 0.68) 50%,
+      rgba(8, 12, 10, 0.82) 100%
+    );}
+.os.os-fullscreen .dock.dock-swipe:focus-visible{outline: 2px solid var(--accent);
+  outline-offset: -4px;}
+/* ⛔ THE WHITE BAR IS GONE (qi 2026-08-12 17:07: "remove that white bar from the
+   swipe glass"). It was an iOS-home-indicator-shaped white gradient
+   (rgba(255,255,255,.95)) centred on the dock — the brightest object on a dark
+   glass surface, which made the dock read as a system chrome bar instead of
+   glass.
+
+   HIDDEN, not deleted from the JSX: `.dock-handle` is `pointer-events:none`
+   decoration, so hiding it costs no behaviour, and keeping the element means the
+   swipe target, the dock-hit region and every JS reference stay exactly as they
+   were. Deleting the node would be a bigger change than he asked for. */
+.os.os-fullscreen .dock.dock-swipe .dock-handle{display: none;}
+/* ═══ THE COMPOSER LIVES IN THE GLASS ═══════════════════════════════════════
+   qi 2026-08-12 19:49: "get my soundwave in the attachment and send buttons and
+   place it directly into the swipe bar and make sure my notifications still right
+   at the bottom of the swipe bar like before" · "This would be 0% difference."
+
+   VvsveiPane MOVES vvsvei's real .composer node into .dock-vei-host (one document,
+   no iframe — a move, not a rebuild). Three things have to be true for that to work:
+
+   1. THE GLASS MUST GROW TO FIT IT. The bar was a fixed
+      calc(var(--dock-h,60px) + safe-area) ≈ 60-78px, and the composer is ~84px
+      (31px pill row + 51px bar). A fixed height would clip it — the exact bug that
+      hid the voice bar off-panel all day. So height becomes auto with the old value
+      as a MINIMUM: empty it looks identical, full it fits.
+
+   2. IT MUST BE TAPPABLE. .dock-hit deliberately covers the whole glass with
+      pointer-events:auto so the glass owns the pane swipe (qi 2026-08-12 18:26:
+      "the swipe glass is literally called the swipe glass because it's supposed to
+      do the swiping"). That layer would swallow every tap on the textarea, the
+      paperclip and send. So the host sits ABOVE it and takes its own events back.
+      The rest of the glass still swipes — only the composer's own box is excluded,
+      which is correct: a drag that starts on the text field should never fling the
+      pane away.
+
+   3. THE PANES MUST FOLLOW ITS REAL HEIGHT. .panes is inset by
+      calc(var(--dock-h) + safe-area) — the SAME variable. A dock that grows while
+      that constant stays put is precisely the "black empty dead space" (qi 20:04).
+      So _xosDockHeight() (app.jsx) measures the dock and publishes --dock-h, and
+      the gap closes by construction instead of by a tuned number. */
+.os.os-fullscreen .dock.dock-swipe{height: auto;
+  /* FLUSH TO THE BOTTOM, NO RESERVED STRIP.
+     qi 2026-08-13 21:20: "the space between the bottom of the screen and the swipe
+     [glass] ... It should not be any space", and 21:18 "it looks taller than what it
+     was before".
+
+     MEASURED, both causes:
+     1. --dock-h is NEVER SET. _xosDockHeight() publishes `--xos-dock-real`, a different
+        variable entirely, so this always resolved to the 60px fallback. Confirmed live:
+        getPropertyValue('--dock-h') === "".
+     2. The safe-area inset was counted TWICE — once added into min-height, and again as
+        padding-bottom. With flex-end alignment the padding pushed the content (handle,
+        sheen, wave, notif ticker) up off the bottom edge by the inset, while the box
+        itself still reached 844. So the glass looked both taller AND detached from the
+        bottom — exactly the two things he reported, from one double-count.
+
+     He asked for zero space, so the inset reservation goes. The glass is now exactly its
+     content height and sits flush on the bottom edge. On a viewport with no inset this
+     changes nothing — verified in a real browser at 390x844: gap below dock was already
+     0px there, which is why this only ever showed up on his handset. */
+  /* ⚠️ REGRESSION I CAUSED AND THE CHAIN THAT CAUSED IT — qi 2026-08-13 21:38:
+     "I dont see my soundwave and my swipe glass is compromised, its been cut."
+
+     Two separate edits removed two height sources in the same window:
+       1. I set .dock-notif-ticker to position:absolute (to restore its symmetric
+          left/right insets). Absolute elements are OUT OF FLOW — it stopped
+          contributing ANY height to this column.
+       2. I set padding-bottom:0 (to kill the safe-area gap he asked me to remove).
+     With --dock-h never actually set by anything, min-height collapsed to a flat 60px
+     while .dock-swipe has overflow:hidden — so the wave and the ticker were clipped.
+     The glass looked cut because it WAS cut.
+
+     THE LESSON: taking an element out of flow silently removes its height from the
+     parent. Combining that with a padding removal in the same change is how two
+     individually-reasonable edits produce one broken layout.
+
+     FIX: reserve the ticker's height explicitly, since it can no longer reserve its own.
+     --dock-notif-h is that reservation; the glass is content height PLUS it, and still
+     sits flush on the bottom edge (no safe-area inset, per his "no space"). */
+  /* ⏪ REVERTED TO KNOWN-GOOD — qi 2026-08-13 21:39: "over 70% of my swipe glass
+     vertically has been cut off" and "they cut my swipe glass AND kept the negative
+     space." I traded a cosmetic gap for a broken glass; that is strictly worse, so the
+     geometry goes back to the shape that was whole.
+
+     I changed this twice in five minutes without ever seeing his device, and each guess
+     produced a new defect. The gap is real and still needs fixing — but from a MEASURED
+     screenshot of his handset, not from reasoning about env() values I cannot observe.
+     A smaller known complaint beats a larger unknown one. */
+  /* ✅ SETTLED WITH HIS OWN NUMBERS — qi's ?geo=1 readout, handset, 2026-08-13 22:41:
+       viewport 402×812 · safe-area bottom=34px · --xos-dock-real=94px
+       .dock.dock-swipe   718→812  h94        GAP dock→screen bottom = 0px
+       #waveform-canvas   719→756  h37        ← pinned to the TOP of the glass
+       .dock-notif-ticker ABSENT
+     So the glass was ALWAYS at the bottom — every "the bar is too high" reading was
+     wrong, mine included. What he was pointing at is the 56px of EMPTY GLASS below the
+     wave: 812 − 756.
+
+     WHY THE WAVE COULD NOT COME DOWN. This column reserves twice under a 37px wave:
+       padding-bottom: 34px   (the inset)
+     + margin-bottom: 22px    (--dock-notif-h, on .dock-vei-host, for the ticker)
+     = 56px of reservation. 37 + 22 + 34 = 93 ≈ the glass's own 94px height, so the
+     column is EXACTLY FULL and `justify-content: flex-end` has zero slack left to
+     distribute. flex-end was never doing anything — the wave sat at the top because
+     the padding pushed everything up against the ceiling, not because it was aligned
+     there. That is why this looked like "the bar is too high" instead of what it is.
+
+     THE INSET DOES NOT NEED PADDING HERE. min-height above already grows the glass by
+     the inset, so the glass covers the home-indicator band with real glass — which is
+     what he asked for: "bottom of the screen = swipe glass". Padding on top of that is
+     a SECOND reservation for the same 34px, and it buys nothing because nothing in
+     this column is at risk of the indicator: the ticker is absolutely positioned and
+     the wave is decorative.
+
+     Dropping it lets flex-end finally work: the wave falls 34px, its bottom lands 22px
+     above the glass bottom, and the ticker (absolute, bottom:6px) sits in exactly that
+     22px strip — inside the glass, at its bottom, directly under the wave. qi 22:40:
+     "bottom of the swipe glass, not underneath — INSIDE the swipe glass equals the
+     notification."
+
+     Height-neutral by construction: min-height is untouched, so the glass stays 94px
+     on his handset and 60.44px without an inset. Only the contents move down. */
+  /* ⛔ SAFE AREA ZEROED — qi 2026-08-13 22:42, after reading his own ?geo=1 readout:
+     "it says bottom 34 pixels and top zero pixels and that must be the issue" ...
+     "It shouldn't be no fucking safe area at all — set the bottom to zero pixels like
+     it was supposed to be."
+
+     He diagnosed it off the probe himself and he is right: on his handset the inset was
+     the ONLY thing between his design and the bottom of the screen. It grew the glass to
+     94px and reserved 56px under a 37px wave, and every "the bar is too high" complaint
+     traces back to that one number.
+
+     --sab is the single knob. It is the value the whole bar's geometry reads, and it is
+     deliberately a variable rather than a hardcoded 0 for two reasons: one line restores
+     the inset if he ever wants it back, and a test can set it to 34px to reproduce his
+     handset exactly — which is the only reason I could measure this at all, since every
+     browser I can drive reports env(safe-area-inset-bottom) as 0 and therefore cannot
+     show the bug.
+
+     THE TRADE, stated plainly because it is real: with the inset at 0 the bottom of the
+     glass sits under the home-indicator band. That is his explicit instruction, twice,
+     and it is his product. */
+  --sab: 0px;                       /* was env(safe-area-inset-bottom, 0px) */
+  min-height: calc(var(--dock-h, 60px) + var(--sab));
+  padding-bottom: var(--sab);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;}
+.os.os-fullscreen .dock.dock-swipe .dock-vei-host{position: relative;
+  z-index: 2;            /* above .dock-hit, which is the gesture layer */
+  pointer-events: auto;  /* take back the events the hit layer claimed */
+  flex: 0 0 auto;
+  width: 100%;
+  /* WAVE ON TOP, NOTIFICATIONS UNDERNEATH. qi 2026-08-13 21:52: "the sound wave and the
+     notifications need to be vertically swapped."
+
+     MEASURED live at 390x844 before this change:
+       .dock.dock-swipe   y=785  h=59   bottom=844
+       .dock-vei-host     y=806  h=37          <- occupies the dock's BOTTOM 37px
+       .dock-notif-ticker position:absolute, bottom:calc(safe-area + 6px)
+     They were not mis-ordered, they were STACKED: the host sits at the bottom because the
+     column is justify-content:flex-end, and the ticker is absolutely pinned to that same
+     bottom edge. Two things claiming one strip.
+
+     The dock is 59px and the wave is 37px, so 22px above it is already unused. Reserving
+     that height BELOW the host lifts the wave into space that already exists and leaves
+     the bottom strip to the ticker — so the swap costs ZERO extra bar height. That matters
+     because he told me at 21:38 the bar had grown and at 21:39 that the glass was cut;
+     any fix that changes this bar's height is a regression regardless of what it fixes.
+
+     Kept in sync with the ticker's own reservation via one variable so the two can never
+     drift apart into an overlap again. */
+  --dock-notif-h: 22px;
+  margin-bottom: var(--dock-notif-h);}
+/* The composer was position:absolute, anchored to the bottom of vvsvei's own
+   viewport-sized wrap. In the glass it is simply IN FLOW — the glass is its
+   container now, so it must not float relative to anything else. Its INTERNALS
+   (#pill-row above .composer-bar) are untouched, which is what keeps the pills
+   where qi put them and makes this 0% different. */
+.os.os-fullscreen .dock.dock-swipe .dock-vei-host .composer{position: static;
+  inset: auto;
+  left: auto; right: auto; bottom: auto;
+  padding: 6px 10px 0;
+  width: 100%;}
+/* Notifications stay at the BOTTOM of the bar, "like before" — the host renders
+   above the ticker in the JSX, and this keeps the ticker hugging the bottom edge
+   in the new column layout. */
+.os.os-fullscreen .dock.dock-swipe .dock-notif-ticker{/* qi 2026-08-13 21:27-21:28: notifications sat at the TOP of the bar instead of the
+     bottom, and ran past the right edge — "it needs to [stop] before it hits the other
+     side ... the same width of where it starts on the left, on the right side."
+
+     ONE CAUSE FOR BOTH. There are two rules for this element. The other one
+     (`.os.os-fullscreen .dock-notif-ticker`, line ~3928) declares position:absolute with
+     left:8% / right:8% / bottom:calc(...). THIS rule is more specific — it carries the
+     extra `.dock.dock-swipe` — so its `position: relative` won.
+
+     On a RELATIVE element those offsets change meaning completely: `left` SHIFTS the box
+     rightward from its flow position and `right` is ignored outright (in LTR, left wins
+     when both are set). So it began 8% in on the left, which read as correct, and
+     overhung the right edge by that same 8%. And `bottom` does nothing in relative flow,
+     so it landed wherever the column flex put it — the top — instead of at the bottom.
+
+     Restoring absolute here lets the sibling rule's left/right/bottom apply as authored:
+     symmetric 8% insets, pinned to the bottom. Scoped strictly to the notification —
+     qi 21:28 "only in the notification". */
+  position: absolute;
+  z-index: 1;
+  flex: 0 0 auto;}
+/* Top-edge refraction highlight - 1px catching light from above */
+.os.os-fullscreen .dock.dock-swipe .dock-sheen{position: absolute;
+  top: 0;
+  left: 8%;
+  right: 8%;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  pointer-events: none;}
+/* Side-edge light catch — subtle vertical glints at the dock corners */
+.os.os-fullscreen .dock.dock-swipe .dock-edge-light{position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  right: 0;
+  background:
+    linear-gradient(to right, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0) 8%, rgba(255,255,255,0) 92%, rgba(255,255,255,0.06) 100%);
+  pointer-events: none;}
+/* Hide any leftover button children if showDock toggled */
+.os.os-fullscreen .dock.dock-swipe .dock-btn{display: none;}
+/* qi 2026-05-17 8672 follow-up: "it isn't swiping"
+   Dock was blocking horizontal pane swipes. Solution: dock is visual-only
+   (pointer-events:none), with a single .dock-hit element at the top capturing
+   tap + vertical swipe-up. Horizontal drags pass through to .panes underneath. */
+.os.os-fullscreen .dock.dock-swipe{pointer-events: none;}
+.os.os-fullscreen .dock.dock-swipe .dock-handle,
+.os.os-fullscreen .dock.dock-swipe .dock-sheen,
+.os.os-fullscreen .dock.dock-swipe .dock-edge-light{pointer-events: none;}
+/* THE GLASS IS THE SWIPE SURFACE (qi 2026-08-12 18:26: "if I swipe from the
+   banner above each of the three panels that lets me swipe but that's the wrong
+   surface — the swipe glass is literally called the swipe glass because it's
+   supposed to do the swiping").
+
+   WAS: clamp(160px,40vw,240px) x 44px pinned to top-center. The glass is
+   full-width and ~84px tall, so MOST OF IT WAS DEAD TO TOUCH, and the strip
+   that did respond handled vertical only (|dy|>|dx| → drawer). Horizontal was
+   deliberately ignored, which is why the only thing that swiped panes was the
+   banner above them.
+
+   NOT a revert of the 2026-05-17 fix. That fix existed because the dock was
+   SWALLOWING horizontal pane swipes, and simply turning pointer-events back on
+   would re-break it. Instead the hit layer now covers the whole glass and the
+   JS handler FORWARDS horizontal drags to the .panes scroller itself — the
+   glass owns the gesture and the panes still move. Vertical-up still opens the
+   drawer, so nothing he already relies on changes. */
+.os.os-fullscreen .dock.dock-swipe .dock-hit{position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  transform: none;
+  pointer-events: auto;
+  cursor: grab;
+  background: transparent;
+  /* The browser must not claim the gesture before the handler classifies its
+     axis — without this, the OS scroll steals horizontal drags on touch. */
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;}
+.os.os-fullscreen .dock.dock-swipe .dock-hit:focus-visible{outline: 2px solid var(--accent);
+  outline-offset: -4px;
+  border-radius: 12px;}
+/* DOCK NOTIFICATION TICKER — digital typing projection over the glass */
+.os.os-fullscreen .dock-notif-ticker{position: absolute;
+  left: 8%;
+  right: 8%;
+  /* THE NEGATIVE SPACE UNDER THE NOTIFICATIONS — qi 2026-08-13 22:05:
+     "the notifications are now at the bottom of the swipe glass are canonically. so now
+     that negative space under that must be eradicated."
+     Notifications-at-the-bottom-of-the-glass is now CANON and is not what changes here.
+     What changes is the empty band beneath them.
+
+     MEASURED — the safe-area inset is counted THREE times on this bar:
+       1. .dock.dock-swipe  min-height: calc(--dock-h + env(safe-area-inset-bottom))
+       2. .dock.dock-swipe  padding-bottom: env(safe-area-inset-bottom)
+       3. HERE              bottom: calc(env(safe-area-inset-bottom) + 6px)
+     Count 3 is the one he is pointing at. This element is position:absolute, and absolute
+     offsets resolve against the PADDING box — padding-bottom does not move it — so adding
+     the inset here is pure duplication of count 2. On his handset (inset ≈ 34px) it floated
+     the ticker 40px above the glass's bottom edge: 34px of that is the double-count, 6px is
+     the intended breathing gap. That 40px band IS the negative space.
+
+     Dropping to a flat 6px removes ONLY the duplicate. Deliberately NOT touched:
+     min-height (count 1) and padding-bottom (count 2) — those set the glass's height and
+     the wave/composer position, and qi 21:38/21:39 ("it looks taller", "over 70% of my
+     swipe glass has been cut off") makes any height change to this bar a regression no
+     matter what it fixes. One line, one cause, zero geometry moved.
+
+     Verified live at 402x874: glass height unchanged at 60.44px, ticker bottom = 6px.
+     The ~34px this reclaims is inset-dependent and therefore only visible on his handset. */
+  bottom: 6px;
+  display: flex;
+  align-items: center;
+  /* HORIZONTALLY CENTRED — qi 2026-08-13 22:37: "on a full screen view that's way to
+     the left and that's not us, that's not a good look, that needs to be center."
+
+     MEASURED at 402px wide before this: the ticker BOX was already symmetric (left:8%
+     / right:8%, 33→369), but the content inside sat at 33→356 — hard against the left
+     edge with 13px of slack on the right only. Two causes, and both are needed:
+       1. no justify-content, so a flex row packs to flex-start;
+       2. `.text { flex: 1}
+.os.os-fullscreen .dock-notif-ticker.fading{opacity: 0;}
+.os.os-fullscreen .dock-notif-ticker .dotglow{width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent), 0 0 12px var(--accent-dim);
+  flex-shrink: 0;}
+.os.os-fullscreen .dock-notif-ticker .text{overflow: hidden;
+  text-overflow: ellipsis;
+  /* THE OTHER HALF OF THE CENTRING. `flex: 1` made this fill the whole row, so the
+     justify-content added above would have had nothing left to distribute — the group
+     would still have started at the left edge. `0 1 auto` sizes it to its content
+     (grow 0) while keeping shrink 1, so long text still collapses and ellipsises
+     exactly as before; min-width:0 is what actually permits a flex item to shrink
+     below its content width, without which the ellipsis never engages. */
+  flex: 0 1 auto;
+  min-width: 0;}
+.os.os-fullscreen .dock-notif-ticker .caret{color: var(--accent);
+  animation: dock-notif-blink 0.85s steps(1) infinite;
+  text-shadow: 0 0 4px var(--accent);}
+@keyframes dock-notif-blink{0%, 50% { opacity: 1;}
+/* Source-color tint based on data-src */
+.os.os-fullscreen .dock-notif-ticker[data-src="email"] .dotglow,
+.os.os-fullscreen .dock-notif-ticker[data-src="email"] .text{color: #f9c47a;}
+.os.os-fullscreen .dock-notif-ticker[data-src="beside"] .dotglow,
+.os.os-fullscreen .dock-notif-ticker[data-src="beside"] .text{color: #7afff5;}
+.os.os-fullscreen .dock-notif-ticker[data-src="whatsapp"] .dotglow,
+.os.os-fullscreen .dock-notif-ticker[data-src="whatsapp"] .text{color: #5fe49b;}
+/* ── VVSVEI MOUNTED IN-DOCUMENT AS THE MIDDLE PANEL ──────────────────────────
+   The wrap is the panel; #xos-vei is the scope root every injected vvsvei
+   selector was rewritten against, so it has to be the thing that owns the
+   height — vvsvei's own layout is a flex column that fills its viewport, and
+   here THIS is its viewport.
+   It stops above the glass dock using the same token + 84px fallback as
+   .xos-browser-overlay, so the composer never lands under the dock. */
+.pane-vei{position:relative;overflow:hidden}
