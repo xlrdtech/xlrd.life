@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>XOS &middot; xlrd.life</title>
+<link rel="canonical" href="https://life.xlrd.org/">
+<meta name="robots" content="noindex">
+<!-- WHY THIS FILE EXISTS — measured 2026-08-26 02:28.
+     index.html already carried the correct path-preserving forward, but GitHub Pages
+     NEVER SERVES index.html for an unmatched path: it serves its own 404 page, and no
+     JS of ours ever runs. Measured: xlrd.life/aether/ -> HTTP 404, 9,379 bytes of
+     GitHub's "Page not found", while life.xlrd.org/aether/ served the real 158,180-byte
+     avatar with pMass/pCarve present. Same for xlrd.life/source/.
+
+     qi had ALREADY given me this exact URL in his own words at the start of the session
+     ("the avatar via xlrd.life/aether") and I never checked that it resolved. He spent
+     hours looking at a 404 and a stale mirror and concluded the work had not shipped.
+     His correction, 2026-08-26 02:28: "you're the one that's gotta keep track of the
+     URL, I don't know what you're talking about." Keeping track means making every URL
+     he might type land on the real thing — not handing him a table of which host works.
+
+     Pages DOES execute JS inside 404.html, so this one file rescues every path on the
+     domain — present and future — instead of one redirect per route.
+
+     Origin discipline is unchanged and deliberate (index.html, qi 2026-08-20 04:06
+     "you can do life.xlrd.org and forward xlrd.life there"): life.xlrd.org is the SINGLE
+     canonical origin, so there is ONE localStorage jar and ONE note store. Two origins
+     serving the same app silently fork his notes depending on which URL he opened. -->
+<script>
+  (function () {
+    var t = "https://life.xlrd.org" + location.pathname + location.search + location.hash;
+    location.replace(t);
+  })();
+</script>
+<meta http-equiv="refresh" content="0;url=https://life.xlrd.org/">
+<style>
+  :root { --bg:#000100; --ink:#dffbe9; --accent:#3cff96; --dim:rgba(223,251,233,.55); }
+  html,body { height:100%; }
+  body {
+    margin:0; background:var(--bg); color:var(--ink);
+    font:15px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+    display:grid; place-items:center; text-align:center; padding:24px;
+  }
+  a { color:var(--accent); text-decoration:none; }
+  a:hover, a:focus-visible { text-decoration:underline; outline:none; }
+  .dim { color:var(--dim); font-size:13px; margin-top:10px; }
+</style>
+</head>
+<body>
+  <main>
+    <p>XOS lives at <a href="https://life.xlrd.org/">life.xlrd.org</a></p>
+    <p class="dim">Forwarding&hellip; tap the link if nothing happens.</p>
+  </main>
+</body>
+</html>
