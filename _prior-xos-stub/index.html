@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>XOS &middot; xlrd.life</title>
+<link rel="canonical" href="https://life.xlrd.org/">
+<meta name="robots" content="noindex">
+<!-- xlrd.life is the vanity name; life.xlrd.org is the single canonical ORIGIN.
+     One origin means one localStorage jar and one note store. Two origins serving
+     the same app silently fork his notes depending on which URL he opened, which
+     is exactly the P0-2 defect this page closes. qi 2026-08-20 04:06:
+     "you can do life.xlrd.org and forward xlrd.life there".
+     JS first (keeps path/query/hash), meta-refresh as the no-JS fallback. -->
+<script>
+  (function () {
+    var t = "https://life.xlrd.org" + location.pathname + location.search + location.hash;
+    location.replace(t);
+  })();
+</script>
+<meta http-equiv="refresh" content="0;url=https://life.xlrd.org/">
+<style>
+  :root { --bg:#000100; --ink:#dffbe9; --accent:#3cff96; --dim:rgba(223,251,233,.55); }
+  html,body { height:100%; }
+  body {
+    margin:0; background:var(--bg); color:var(--ink);
+    font:15px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+    display:grid; place-items:center; text-align:center; padding:24px;
+  }
+  a { color:var(--accent); text-decoration:none; }
+  a:hover, a:focus-visible { text-decoration:underline; outline:none; }
+  .dim { color:var(--dim); font-size:13px; margin-top:10px; }
+</style>
+</head>
+<body>
+  <main>
+    <p>XOS lives at <a href="https://life.xlrd.org/">life.xlrd.org</a></p>
+    <p class="dim">Forwarding&hellip; tap the link if nothing happens.</p>
+  </main>
+</body>
+</html>
